@@ -21,22 +21,34 @@ func main() {
 	window := gocv.NewWindow("webcamwindow")
 	defer window.Close()
 
-	harrcascade := "haarcascades/haarcascade_frontalface_default.xml"
-	classifier := gocv.NewCascadeClassifier()
-	classifier.Load(harrcascade)
-	defer classifier.Close()
+	faceCascade := "haarcascades/haarcascade_frontalface_default.xml"
+	eyeCascade := "haarcascades/haarcascade_eye.xml"
+
+	classifierFace := gocv.NewCascadeClassifier()
+	classifierFace.Load(faceCascade)
+	defer classifierFace.Close()
+
+	classifierEye := gocv.NewCascadeClassifier()
+	classifierEye.Load(eyeCascade)
+	defer classifierEye.Close()
 
 	color := color.RGBA{0, 255, 0, 0}
-	for {
+	for true {
 		if ok := webcam.Read(&img); !ok || img.Empty() {
 			log.Println("Unable to read from the device")
 			continue
 		}
 
-		rects := classifier.DetectMultiScale(img)
-		for _, r := range rects {
-			fmt.Println("detected", r)
-			gocv.Rectangle(&img, r, color, 3)
+		faces := classifierFace.DetectMultiScale(img)
+		for _, f := range faces {
+			fmt.Println("face detected", f)
+			gocv.Rectangle(&img, f, color, 3)
+
+			eyes := classifierEye.DetectMultiScale(img)
+			for _, e := range eyes {
+				fmt.Println("eye detected", e)
+				gocv.Rectangle(&img, e, color, 3)
+			}
 		}
 
 		window.IMShow(img)
